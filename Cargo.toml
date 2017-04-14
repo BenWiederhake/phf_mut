@@ -1,0 +1,11 @@
+[package]
+name = "phf_mut"
+version = "0.1.0"
+authors = ["Ben Wiederhake <BenWiederhake.GitHub@gmx.de>"]
+description = "Perfectly hashed mutable containers"
+repository = "https://github.com/BenWiederhake/phf_mut"
+readme = "README.md"
+license = "GPL-3.0"
+#license-file = "LICENSE"
+
+[dependencies]
