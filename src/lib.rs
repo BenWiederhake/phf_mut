@@ -23,10 +23,6 @@ impl<V: Default, H: Hasher> Map<V, H> {
 		}
 	}
 
-	pub fn print_size(&self) {
-		println!("Size is {}.", self.hash.size());
-	}
-
 	pub fn insert(&mut self, k: H::K, v: V) {
 		self.backing[self.hash.hash(k)] = v;
 	}
@@ -66,7 +62,6 @@ fn it_works() {
 	};
 
 	let mut mymap = Map::new(Cuboid::new(10, 20, 30));
-	mymap.print_size();
 	mymap.insert((0, 3, 7), "Hello ");
 	mymap.insert((4, 19, 13), "lovely");
 	mymap.insert((9, 8, 29), "World!");
