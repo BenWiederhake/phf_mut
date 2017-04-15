@@ -103,7 +103,6 @@ I won't even begin to claim good performance.
 ## TODOs
 
 Important:
-* Barely implement `Map`, the most important thing.
 * Barely implement `Set`, the second most important thing.
 * Ask people for feedback on making it "Idiomatic Rust"
 

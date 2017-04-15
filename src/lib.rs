@@ -7,7 +7,6 @@ pub trait Hasher {
 	fn size(&self) -> usize;
 }
 
-// TODO: Eventually move to own module.
 pub struct Map<V, H> {
 	hash: H,
 	backing: Box<[V]>,
