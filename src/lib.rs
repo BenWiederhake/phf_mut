@@ -23,64 +23,66 @@ use std::ops::{Index, IndexMut};
 mod tests;
 
 pub trait Hasher {
-	type K;
-	fn hash(&self, k: Self::K) -> usize;
-	fn size(&self) -> usize;
+    type K;
+    fn hash(&self, k: Self::K) -> usize;
+    fn size(&self) -> usize;
 }
 
 pub struct Map<V, H> {
-	hash: H,
-	backing: Box<[V]>,
+    hash: H,
+    backing: Box<[V]>,
 }
 
 impl<V: Default, H: Hasher> Map<V, H> {
-	pub fn new(hash: H) -> Self {
-		let size = hash.size();
-		let mut vec : Vec<V> = Vec::with_capacity(size);
-		for _ in 0..size {
-			vec.push(V::default());
-		}
-		Map {
-			hash: hash,
-			backing: vec.into_boxed_slice(),
-		}
-	}
+    pub fn new(hash: H) -> Self {
+        let size = hash.size();
+        let mut vec: Vec<V> = Vec::with_capacity(size);
+        for _ in 0..size {
+            vec.push(V::default());
+        }
+        Map {
+            hash: hash,
+            backing: vec.into_boxed_slice(),
+        }
+    }
 }
 
 impl<V, H: Hasher> Map<V, H> {
-	pub fn from_initial(hash: H, init: Vec<V>) -> Self {
-		let size = hash.size();
-		assert_eq!(size, init.len());
-		Map {
-			hash: hash,
-			backing: init.into_boxed_slice(),
-		}
-	}
+    pub fn from_initial(hash: H, init: Vec<V>) -> Self {
+        let size = hash.size();
+        assert_eq!(size, init.len());
+        Map {
+            hash: hash,
+            backing: init.into_boxed_slice(),
+        }
+    }
 
-	pub fn insert(&mut self, k: H::K, v: V) {
-		self.backing[self.hash.hash(k)] = v;
-	}
+    pub fn insert(&mut self, k: H::K, v: V) {
+        self.backing[self.hash.hash(k)] = v;
+    }
 
-	pub fn get(&self, k: H::K) -> &V {
-		&self.backing[self.hash.hash(k)]
-	}
+    pub fn get(&self, k: H::K) -> &V {
+        &self.backing[self.hash.hash(k)]
+    }
 
-	pub fn get_mut(&mut self, k: H::K) -> &mut V {
-		&mut self.backing[self.hash.hash(k)]
-	}
+    pub fn get_mut(&mut self, k: H::K) -> &mut V {
+        &mut self.backing[self.hash.hash(k)]
+    }
 }
 
 impl<V, H> Map<V, H> {
-	pub fn is_empty(&self) -> bool {
-		self.backing.is_empty()
-	}
+    pub fn is_empty(&self) -> bool {
+        self.backing.is_empty()
+    }
 
-	pub fn len(&self) -> usize {
-		self.backing.len()
-	}
+    pub fn len(&self) -> usize {
+        self.backing.len()
+    }
 }
 
-impl<V, H> fmt::Debug for Map<V, H> where V: fmt::Debug {
+impl<V, H> fmt::Debug for Map<V, H>
+    where V: fmt::Debug
+{
     fn fmt(&self, fmt: &mut fmt::Formatter) -> fmt::Result {
         write!(fmt, "{:?}", &*self.backing)
     }
@@ -101,37 +103,37 @@ impl<V, H: Hasher> IndexMut<H::K> for Map<V, H> {
 }
 
 pub struct Set<H> {
-	hash: H,
-	backing: bit_vec::BitVec,
+    hash: H,
+    backing: bit_vec::BitVec,
 }
 
 impl<H: Hasher> Set<H> {
-	pub fn new(hash: H) -> Self {
-		let size = hash.size();
-		Set {
-			hash: hash,
-			backing: bit_vec::BitVec::from_elem(size, false),
-		}
-	}
-	
-	pub fn insert(&mut self, k: H::K) -> bool {
-	    let idx = self.hash.hash(k);
-	    let ret = self.backing.get(idx).unwrap();
-	    self.backing.set(idx, true);
-	    ret
-	}
-	
-	pub fn erase(&mut self, k: H::K) -> bool {
-	    let idx = self.hash.hash(k);
-	    let ret = self.backing.get(idx).unwrap();
-	    self.backing.set(idx, false);
-	    ret
-	}
-	
-	pub fn contains(&self, k: H::K) -> bool {
-	    let idx = self.hash.hash(k);
-	    self.backing.get(idx).unwrap()
-	}
+    pub fn new(hash: H) -> Self {
+        let size = hash.size();
+        Set {
+            hash: hash,
+            backing: bit_vec::BitVec::from_elem(size, false),
+        }
+    }
+
+    pub fn insert(&mut self, k: H::K) -> bool {
+        let idx = self.hash.hash(k);
+        let ret = self.backing.get(idx).unwrap();
+        self.backing.set(idx, true);
+        ret
+    }
+
+    pub fn erase(&mut self, k: H::K) -> bool {
+        let idx = self.hash.hash(k);
+        let ret = self.backing.get(idx).unwrap();
+        self.backing.set(idx, false);
+        ret
+    }
+
+    pub fn contains(&self, k: H::K) -> bool {
+        let idx = self.hash.hash(k);
+        self.backing.get(idx).unwrap()
+    }
 }
 
 impl<H: Hasher + Default> Default for Set<H> {

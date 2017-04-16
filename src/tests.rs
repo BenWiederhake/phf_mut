@@ -19,67 +19,67 @@ use {Hasher, Map, Set};
 /* === Example use case === */
 
 struct Cuboid {
-	w: usize,
-	h: usize,
-	d: usize,
+    w: usize,
+    h: usize,
+    d: usize,
 }
 
 impl Cuboid {
-	pub fn new(w: usize, h: usize, d: usize) -> Self {
-		assert!(w > 0);
-		assert!(h > 0);
-		assert!(d > 0);
-		Cuboid { w: w, h: h, d: d }
-	}
+    pub fn new(w: usize, h: usize, d: usize) -> Self {
+        assert!(w > 0);
+        assert!(h > 0);
+        assert!(d > 0);
+        Cuboid { w: w, h: h, d: d }
+    }
 }
 
 impl Hasher for Cuboid {
-	type K = (usize, usize, usize);
+    type K = (usize, usize, usize);
 
-	fn hash(&self, (x, y, z): Self::K) -> usize {
-		x + self.w * y + self.w * self.h * z
-	}
+    fn hash(&self, (x, y, z): Self::K) -> usize {
+        x + self.w * y + self.w * self.h * z
+    }
 
-	fn size(&self) -> usize {
-		self.hash((self.w - 1, self.h - 1, self.d - 1)) + 1
-	}
+    fn size(&self) -> usize {
+        self.hash((self.w - 1, self.h - 1, self.d - 1)) + 1
+    }
 }
 
 /* === Actual tests: Map === */
 
 #[test]
 fn test_map_basics() {
-	let mut mymap = Map::new(Cuboid::new(10, 20, 30));
-	mymap.insert((0, 3, 7), "Hello".to_string());
-	mymap[(0, 3, 7)].push(' ');
-	mymap.insert((4, 19, 13), "lovely".to_string());
-	mymap.insert((9, 8, 29), "World!".to_string());
-	assert_eq!("Hello ", mymap.get((0, 3, 7)));
-	assert_eq!("", mymap.get((2, 15, 2)));
-	assert_eq!("World!", mymap[(9, 8, 29)]);
-	assert_eq!("", mymap.get((7, 4, 23)));
+    let mut mymap = Map::new(Cuboid::new(10, 20, 30));
+    mymap.insert((0, 3, 7), "Hello".to_string());
+    mymap[(0, 3, 7)].push(' ');
+    mymap.insert((4, 19, 13), "lovely".to_string());
+    mymap.insert((9, 8, 29), "World!".to_string());
+    assert_eq!("Hello ", mymap.get((0, 3, 7)));
+    assert_eq!("", mymap.get((2, 15, 2)));
+    assert_eq!("World!", mymap[(9, 8, 29)]);
+    assert_eq!("", mymap.get((7, 4, 23)));
 }
 
 /* === Actual tests: Set === */
 
 #[test]
 fn test_set_basics() {
-	let mut myset = Set::new(Cuboid::new(10, 20, 30));
-	myset.insert((7, 6, 5));
-	myset.insert((4, 3, 2));
-	myset.insert((1, 0, 8));
-	assert_eq!(true, myset.contains((7, 6, 5)));
-	assert_eq!(false, myset.contains((7, 8, 9)));
-	assert_eq!(true, myset.contains((4, 3, 2)));
-	assert_eq!(false, myset.contains((9, 10, 11)));
-	assert_eq!(true, myset.contains((1, 0, 8)));
-	assert_eq!(false, myset.contains((5, 15, 25)));
+    let mut myset = Set::new(Cuboid::new(10, 20, 30));
+    myset.insert((7, 6, 5));
+    myset.insert((4, 3, 2));
+    myset.insert((1, 0, 8));
+    assert_eq!(true, myset.contains((7, 6, 5)));
+    assert_eq!(false, myset.contains((7, 8, 9)));
+    assert_eq!(true, myset.contains((4, 3, 2)));
+    assert_eq!(false, myset.contains((9, 10, 11)));
+    assert_eq!(true, myset.contains((1, 0, 8)));
+    assert_eq!(false, myset.contains((5, 15, 25)));
 
-	myset.erase((4, 3, 2));
-	assert_eq!(true, myset.contains((7, 6, 5)));
-	assert_eq!(false, myset.contains((7, 8, 9)));
-	assert_eq!(false, myset.contains((4, 3, 2))); /* Change */
-	assert_eq!(false, myset.contains((9, 10, 11)));
-	assert_eq!(true, myset.contains((1, 0, 8)));
-	assert_eq!(false, myset.contains((5, 15, 25)));
+    myset.erase((4, 3, 2));
+    assert_eq!(true, myset.contains((7, 6, 5)));
+    assert_eq!(false, myset.contains((7, 8, 9)));
+    assert_eq!(false, myset.contains((4, 3, 2))); /* Change */
+    assert_eq!(false, myset.contains((9, 10, 11)));
+    assert_eq!(true, myset.contains((1, 0, 8)));
+    assert_eq!(false, myset.contains((5, 15, 25)));
 }
