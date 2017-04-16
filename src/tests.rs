@@ -72,6 +72,26 @@ fn test_map_basics() {
     assert_eq!("", mymap.get((7, 4, 23)));
 }
 
+#[test]
+fn test_map_iter() {
+    let mut mymap = Map::new(Cuboid::new(2, 3, 2));
+    mymap.insert((0, 1, 0), 42);
+    mymap.insert((1, 0, 1), 44);
+    mymap.insert((1, 2, 0), 123);
+    mymap.insert((1, 1, 1), 0xCAFE);
+    mymap[(1, 0, 1)] = 5;
+    let value_vec = mymap.values().map(|x| *x).collect::<Vec<_>>();
+    assert_eq!(vec![0, 0, 42, 0, 0, 123, 0, 5, 0, 0xCAFE, 0, 0], value_vec);
+    let entry_vec = mymap.iter().map(|((x, y, z), &v)| (x, y, z, v))
+                         .collect::<Vec<_>>();
+    assert_eq!(vec![(0, 0, 0, 0), (1, 0, 0, 0),
+                    (0, 1, 0, 42), (1, 1, 0, 0),
+                    (0, 2, 0, 0), (1, 2, 0, 123),
+                    (0, 0, 1, 0), (1, 0, 1, 5),
+                    (0, 1, 1, 0), (1, 1, 1, 0xCAFE),
+                    (0, 2, 1, 0), (1, 2, 1, 0),], entry_vec);
+}
+
 /* === Actual tests: Set === */
 
 #[test]

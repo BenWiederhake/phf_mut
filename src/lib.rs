@@ -51,6 +51,62 @@ impl<V: Default, H: Hasher> Map<V, H> {
     }
 }
 
+impl<V, H: HasherInverse> Map<V, H> {
+    pub fn iter<'a>(&'a self) -> MapIter<'a, H, V> {
+        MapIter {
+            backing: self.backing.iter(),
+            hash: &self.hash,
+            pos: 0,
+        }
+    }
+
+    pub fn iter_mut<'a>(&'a mut self) -> MapIterMut<'a, H, V> {
+        MapIterMut {
+            backing: self.backing.iter_mut(),
+            hash: &self.hash,
+            pos: 0,
+        }
+    }
+}
+
+pub struct MapIter<'a, H: 'a, V: 'a> {
+    // TODO: Sub-optimal approach.  Now the position is saved twice.
+    backing: std::slice::Iter<'a, V>,
+    hash: &'a H,
+    pos: usize,
+}
+
+impl<'a, H: HasherInverse, V: 'a> Iterator for MapIter<'a, H, V> {
+    type Item = (H::K, &'a V);
+
+    fn next(&mut self) -> Option<Self::Item> {
+        self.backing.next().map(|value| {
+            let key = self.hash.invert(self.pos);
+            self.pos += 1;
+            (key, value)
+        })
+    }
+}
+
+pub struct MapIterMut<'a, H: 'a, V: 'a> {
+    // TODO: Sub-optimal approach.  Now the position is saved twice.
+    backing: std::slice::IterMut<'a, V>,
+    hash: &'a H,
+    pos: usize,
+}
+
+impl<'a, H: HasherInverse, V: 'a> Iterator for MapIterMut<'a, H, V> {
+    type Item = (H::K, &'a mut V);
+
+    fn next(&mut self) -> Option<Self::Item> {
+        self.backing.next().map(|value| {
+            let key = self.hash.invert(self.pos);
+            self.pos += 1;
+            (key, value)
+        })
+    }
+}
+
 impl<V, H: Hasher> Map<V, H> {
     pub fn from_initial(hash: H, init: Vec<V>) -> Self {
         let size = hash.size();
@@ -81,6 +137,14 @@ impl<V, H> Map<V, H> {
 
     pub fn len(&self) -> usize {
         self.backing.len()
+    }
+
+    pub fn values<'a>(&'a self) -> std::slice::Iter<'a, V> {
+        self.backing.iter()
+    }
+
+    pub fn values_mut<'a>(&'a mut self) -> std::slice::IterMut<'a, V> {
+        self.backing.iter_mut()
     }
 }
 
