@@ -1,5 +1,26 @@
+// phf_mut – Perfectly hashed mutable containers
+// Copyright (C) 2017  Ben Wiederhake
+//
+// This program is free software: you can redistribute it and/or modify
+// it under the terms of the GNU General Public License as published by
+// the Free Software Foundation, either version 3 of the License, or
+// (at your option) any later version.
+//
+// This program is distributed in the hope that it will be useful,
+// but WITHOUT ANY WARRANTY; without even the implied warranty of
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+// GNU General Public License for more details.
+//
+// You should have received a copy of the GNU General Public License
+// along with this program.  If not, see <http://www.gnu.org/licenses/>.
+
+extern crate bit_vec;
+
 use std::fmt;
 use std::ops::{Index, IndexMut};
+
+#[cfg(test)]
+mod tests;
 
 pub trait Hasher {
 	type K;
@@ -79,43 +100,42 @@ impl<V, H: Hasher> IndexMut<H::K> for Map<V, H> {
     }
 }
 
-#[test]
-fn it_works() {
-	struct Cuboid {
-		w: usize,
-		h: usize,
-		d: usize,
-	}
+pub struct Set<H> {
+	hash: H,
+	backing: bit_vec::BitVec,
+}
 
-	impl Cuboid {
-		pub fn new(w: usize, h: usize, d: usize) -> Self {
-			assert!(w > 0);
-			assert!(h > 0);
-			assert!(d > 0);
-			Cuboid { w: w, h: h, d: d }
+impl<H: Hasher> Set<H> {
+	pub fn new(hash: H) -> Self {
+		let size = hash.size();
+		Set {
+			hash: hash,
+			backing: bit_vec::BitVec::from_elem(size, false),
 		}
 	}
-
-	impl Hasher for Cuboid {
-		type K = (usize, usize, usize);
-
-		fn hash(&self, (x, y, z): Self::K) -> usize {
-			x + self.w * y + self.w * self.h * z
-		}
-
-		fn size(&self) -> usize {
-			self.hash((self.w - 1, self.h - 1, self.d - 1)) + 1
-		}
+	
+	pub fn insert(&mut self, k: H::K) -> bool {
+	    let idx = self.hash.hash(k);
+	    let ret = self.backing.get(idx).unwrap();
+	    self.backing.set(idx, true);
+	    ret
 	}
+	
+	pub fn erase(&mut self, k: H::K) -> bool {
+	    let idx = self.hash.hash(k);
+	    let ret = self.backing.get(idx).unwrap();
+	    self.backing.set(idx, false);
+	    ret
+	}
+	
+	pub fn contains(&self, k: H::K) -> bool {
+	    let idx = self.hash.hash(k);
+	    self.backing.get(idx).unwrap()
+	}
+}
 
-	let mut mymap = Map::new(Cuboid::new(10, 20, 30));
-	mymap.insert((0, 3, 7), "Hello ".to_string());
-	mymap[(0, 3, 7)].push(' ');
-	mymap.insert((4, 19, 13), "lovely".to_string());
-	mymap.insert((9, 8, 29), "World!".to_string());
-	print!("{}", mymap.get((0, 3, 7))); // "Hello "
-	print!("{}", mymap.get((2, 15, 2))); // ""
-	print!("{}", mymap[(9, 8, 29)]); // "World!"
-	print!("{}", mymap.get((7, 4, 23))); // ""
-	println!();
+impl<H: Hasher + Default> Default for Set<H> {
+    fn default() -> Self {
+        Self::new(H::default())
+    }
 }

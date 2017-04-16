@@ -9,3 +9,4 @@ license = "GPL-3.0"
 #license-file = "LICENSE"
 
 [dependencies]
+bit-vec = "0.4.3"
