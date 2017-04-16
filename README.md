@@ -6,24 +6,27 @@ Assume you want a map from keys to values, your key domain is small-ish,
 and you already have a perfect hash function.
 
 The `phf` package supports immutable, compile-time generated maps.
-But what about mutable maps?
+But what about mutable maps and sets?
 
 It seems there isn't such a crate yet, so I wrote my own.
-For now, this is just a wrapper for `Vec<Option<V>>`, which is a bit inefficient.
-Improvements in the style of `std::collections::hash::RawTable` are very welcome.
 
+In the case of maps, assume some kind of default element.
 Note that we will assume that the map will be rather full.
 In the case of a sparse map, `HashMap` probably can't be beaten anyway.
 
 My personal use case is a *completely* filled map and a default-constructible type.
 So the container is always considered full.
 
+In the case of sets, assume that the domain (set of possible keys)
+is small enough to be representable by some kind of bitset.
+Again, `HashSet` plus a custom wrapper (in order to override `PartialEq`)
+is going to beat this implementation for very small domains, or for sparse sets.
+
 ## Table of Contents
 
 - [Background](#background)
 - [Install](#install)
 - [Usage](#usage)
-- [Performance](#performance)
 - [TODOs](#todos)
 - [Contribute](#contribute)
 
@@ -58,58 +61,55 @@ extern crate phf_mut;
 use phf_mut::{Hasher, Map};
 
 struct Cuboid {
-	w: usize,
-	h: usize,
-	d: usize,
+    w: usize,
+    h: usize,
+    d: usize,
 }
 
 impl Cuboid {
-	pub fn new(w: usize, h: usize, d: usize) -> Self {
-		assert!(w > 0);
-		assert!(h > 0);
-		assert!(d > 0);
-		Cuboid { w: w, h: h, d: d }
-	}
+    pub fn new(w: usize, h: usize, d: usize) -> Self {
+        assert!(w > 0);
+        assert!(h > 0);
+        assert!(d > 0);
+        Cuboid { w: w, h: h, d: d }
+    }
 }
 
-impl Hasher<&(usize, usize, usize)> for Cuboid {
-	fn hash(&self, (x: usize, y: usize, z: usize)) -> usize {
-		x + self.w * y + self.w * self.h * z
-	}
+impl Hasher for Cuboid {
+    type K = (usize, usize, usize);
 
-	fn size(&self) -> usize {
-		self.hash((self.w - 1, self.h - 1, self.d - 1)) + 1
-	}
+    fn hash(&self, (x, y, z): Self::K) -> usize {
+        x + self.w * y + self.w * self.h * z
+    }
+
+    fn size(&self) -> usize {
+        self.hash((self.w - 1, self.h - 1, self.d - 1)) + 1
+    }
 }
 
 fn main() {
-	let mut mymap = Map::new(Cuboid::new(10, 20, 30));
-	mymap.insert((0, 3, 7), "Hello ");
-	mymap.insert((4, 19, 13), "lovely");
-	mymap.insert((9, 8, 29), "World!");
-	print!("{}", mymap.get((0, 3, 7))); // "Hello "
-	print!("{}", mymap.get((2, 15, 2))); // ""
-	print!("{}", mymap.get((9, 8, 29))); // "World!"
-	print!("{}", mymap.get((7, 4, 23))); // ""
-	println!();
+    let mut mymap = Map::new(Cuboid::new(10, 20, 30));
+    mymap.insert((0, 3, 7), "Hello ");
+    mymap.insert((4, 19, 13), "lovely");
+    mymap.insert((9, 8, 29), "World!");
+    print!("{}", mymap.get((0, 3, 7))); // "Hello "
+    print!("{}", mymap.get((2, 15, 2))); // ""
+    print!("{}", mymap.get((9, 8, 29))); // "World!"
+    print!("{}", mymap.get((7, 4, 23))); // ""
+    println!();
 }
 ```
 
-## Performance
-
-Not done yet.  As long as the `Option`s aren't optimized away,
-I won't even begin to claim good performance.
-
 ## TODOs
 
-Important:
-* Barely implement `Set`, the second most important thing.
-* Ask people for feedback on making it "Idiomatic Rust"
-
-Optional:
-* Try to compile as `nostdlib`, after all I don't use anything anyway, I guess.
 * Make it feature-complete?
-* Try to make it work for non-`Default` values?
+    * `Default`, `Index`, `Clone`, `PartialEq`, `Eq`
+    * nicer `Debug` for `HasherInverse`-instances
+    * consuming `IntoIterator`s
+    * `::collect` target? (`FromIterator<(K,V)>`)
+    * Likewise, `Extend<K,V>`
+* Ask people for feedback on making it "Idiomatic Rust"
+* Try to compile as `nostdlib`, after all I don't use anything anyway, I guess.
 
 ## Contribute
 
