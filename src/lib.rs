@@ -28,6 +28,10 @@ pub trait Hasher {
     fn size(&self) -> usize;
 }
 
+pub trait HasherInverse : Hasher {
+    fn invert(&self, hash: usize) -> Self::K;
+}
+
 pub struct Map<V, H> {
     hash: H,
     backing: Box<[V]>,
@@ -130,14 +134,62 @@ impl<H: Hasher> Set<H> {
         ret
     }
 
+    fn has(&self, index: usize) -> bool {
+        self.backing.get(index).unwrap()
+    }
+
     pub fn contains(&self, k: H::K) -> bool {
         let idx = self.hash.hash(k);
-        self.backing.get(idx).unwrap()
+        self.has(idx)
+    }
+
+    pub fn iter<'a>(&'a self) -> SetIter<'a, H> {
+        SetIter {
+            next: self.backing.len(),
+            set: self,
+        }
+    }
+}
+
+// TODO: How to impl IntoIterator for Set<H> itself?
+impl<'a, H: HasherInverse> IntoIterator for &'a Set<H> {
+    type Item = H::K;
+    type IntoIter = SetIter<'a, H>;
+
+    fn into_iter(self) -> SetIter<'a, H> {
+        self.iter()
     }
 }
 
 impl<H: Hasher + Default> Default for Set<H> {
     fn default() -> Self {
         Self::new(H::default())
+    }
+}
+
+pub struct SetIter<'a, H: Hasher + 'a> {
+    next: usize,
+    set: &'a Set<H>,
+}
+
+impl<'a, H: HasherInverse> Iterator for SetIter<'a, H> {
+    type Item = H::K;
+
+    fn next(&mut self) -> Option<Self::Item> {
+        let size = self.set.hash.size();
+        if self.next == size {
+            /* Fresh start, or wrapped. */
+            self.next = 0;
+        } else {
+            self.next += 1;
+        }
+        while self.next < size && !self.set.has(self.next) {
+            self.next += 1;
+        }
+        if self.next == size {
+            None
+        } else {
+            Some(self.set.hash.invert(self.next))
+        }
     }
 }

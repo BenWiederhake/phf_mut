@@ -14,7 +14,7 @@
 // You should have received a copy of the GNU General Public License
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-use {Hasher, Map, Set};
+use {Hasher, HasherInverse, Map, Set};
 
 /* === Example use case === */
 
@@ -42,6 +42,18 @@ impl Hasher for Cuboid {
 
     fn size(&self) -> usize {
         self.hash((self.w - 1, self.h - 1, self.d - 1)) + 1
+    }
+}
+
+impl HasherInverse for Cuboid {
+    fn invert(&self, index: usize) -> Self::K {
+        let x = index % self.w;
+        let index = index / self.w;
+        let y = index % self.h;
+        let index = index / self.h;
+        assert!(index < self.d);
+        let z = index;
+        (x, y, z)
     }
 }
 
@@ -82,4 +94,15 @@ fn test_set_basics() {
     assert_eq!(false, myset.contains((9, 10, 11)));
     assert_eq!(true, myset.contains((1, 0, 8)));
     assert_eq!(false, myset.contains((5, 15, 25)));
+}
+
+#[test]
+fn test_set_iter() {
+    let mut myset = Set::new(Cuboid::new(10, 20, 30));
+    myset.insert((7, 6, 5));
+    myset.insert((4, 3, 2));
+    myset.insert((1, 0, 8));
+    let myset: Set<_> = myset;
+    let as_vec = myset.iter().collect::<Vec<_>>();
+    assert_eq!(vec![(4, 3, 2), (7, 6, 5), (1, 0, 8)], as_vec);
 }
