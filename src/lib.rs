@@ -14,6 +14,9 @@
 // You should have received a copy of the GNU General Public License
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
+#![feature(fn_traits)]
+#![feature(unboxed_closures)]
+
 extern crate bit_vec;
 
 use std::fmt;
@@ -142,21 +145,46 @@ impl<H: Hasher> Set<H> {
         let idx = self.hash.hash(k);
         self.has(idx)
     }
+}
 
-    pub fn iter<'a>(&'a self) -> SetIter<'a, H> {
-        SetIter {
-            next: self.backing.len(),
-            set: self,
+pub struct KeyIfPresent<'a, H: 'a>(&'a Set<H>);
+
+impl<'a, H: HasherInverse> Fn<(usize,)> for KeyIfPresent<'a, H> {
+    extern "rust-call" fn call(&self, (index,): (usize,)) -> Self::Output {
+        if self.0.has(index) {
+            Some(self.0.hash.invert(index))
+        } else {
+            None
         }
+    }
+}
+
+impl<'a, H: HasherInverse> FnMut<(usize,)> for KeyIfPresent<'a, H> {
+    extern "rust-call" fn call_mut(&mut self, index: (usize,)) -> Self::Output {
+        self.call(index)
+    }
+}
+
+impl<'a, H: HasherInverse> FnOnce<(usize,)> for KeyIfPresent<'a, H> {
+    type Output = Option<H::K>;
+
+    extern "rust-call" fn call_once(self, index: (usize,)) -> Self::Output {
+        self.call(index)
+    }
+}
+
+impl<H: HasherInverse> Set<H> {
+    pub fn iter<'a>(&'a self) -> std::iter::FilterMap<std::ops::Range<usize>, KeyIfPresent<'a, H>> {
+        (0..self.backing.len()).filter_map(KeyIfPresent(self))
     }
 }
 
 // TODO: How to impl IntoIterator for Set<H> itself?
 impl<'a, H: HasherInverse> IntoIterator for &'a Set<H> {
     type Item = H::K;
-    type IntoIter = SetIter<'a, H>;
+    type IntoIter = std::iter::FilterMap<std::ops::Range<usize>, KeyIfPresent<'a, H>>;
 
-    fn into_iter(self) -> SetIter<'a, H> {
+    fn into_iter(self) -> Self::IntoIter {
         self.iter()
     }
 }
