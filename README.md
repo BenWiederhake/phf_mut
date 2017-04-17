@@ -58,7 +58,7 @@ not in writing the code.
 
 ```Rust
 extern crate phf_mut;
-use phf_mut::{Hasher, Map};
+use phf_mut::{PerfectHash, Map};
 
 struct Pairs {
     n: usize,
@@ -82,7 +82,7 @@ impl Pairs {
     }
 }
 
-impl Hasher for Pairs {
+impl PerfectHash for Pairs {
     type K = (usize, usize);
 
     fn hash(&self, k: Self::K) -> usize {
@@ -111,16 +111,15 @@ fn main() {
 
 ## TODOs
 
-* Rename `Hasher` to `PerfectHash`
 * Make it feature-complete?
     * `Default`, `Index`, `Clone`, `PartialEq`, `Eq`
-    * nicer `Debug` for `HasherInverse`-instances
+    * nicer `Debug` for `HashInverse`-instances
     * consuming `IntoIterator`s
     * `::collect` target? (`FromIterator<(K,V)>`)
     * Likewise, `Extend<K,V>`
     * `Map::swap(k: H::K, v: &mut V);` in order to "return" the old value
     * all `impl IntoIterator for Map`
-    * Provide a general `impl Iterator<Item=H::K>` for all `HasherInverse`?
+    * Provide a general `impl Iterator<Item=H::K>` for all `HashInverse`?
 * Ask people for feedback on making it "Idiomatic Rust"
 * Try to compile as `nostdlib`, after all I don't use anything anyway, I guess.
 

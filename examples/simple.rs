@@ -15,7 +15,7 @@
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 extern crate phf_mut;
-use phf_mut::{Hasher, Map};
+use phf_mut::{PerfectHash, Map};
 
 struct Pairs {
     n: usize,
@@ -39,7 +39,7 @@ impl Pairs {
     }
 }
 
-impl Hasher for Pairs {
+impl PerfectHash for Pairs {
     type K = (usize, usize);
 
     fn hash(&self, k: Self::K) -> usize {

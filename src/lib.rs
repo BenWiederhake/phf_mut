@@ -25,7 +25,7 @@ use std::ops::{Index, IndexMut};
 mod tests;
 
 /// The perfect hash function to be used in all further constructions.
-pub trait Hasher {
+pub trait PerfectHash {
     type K;
     fn hash(&self, k: Self::K) -> usize;
     fn size(&self) -> usize;
@@ -34,7 +34,7 @@ pub trait Hasher {
 /// Inverse operation of the perfect hash function.
 /// This is necessary for all operations that *generate* key values,
 /// for example iteration.
-pub trait HasherInverse: Hasher {
+pub trait HashInverse: PerfectHash {
     fn invert(&self, hash: usize) -> Self::K;
 }
 
@@ -45,7 +45,7 @@ pub struct Map<V, H> {
     backing: Box<[V]>,
 }
 
-impl<V: Default, H: Hasher> Map<V, H> {
+impl<V: Default, H: PerfectHash> Map<V, H> {
     /// Create a new `Map` full default values.
     /// Also see `from_initial` and `from_element`.
     pub fn new(hash: H) -> Self {
@@ -61,7 +61,7 @@ impl<V: Default, H: Hasher> Map<V, H> {
     }
 }
 
-impl<V: Copy, H: Hasher> Map<V, H> {
+impl<V: Copy, H: PerfectHash> Map<V, H> {
     /// Create a new `Map` full of copies of some value.
     /// Also see `from_initial` and `new`.
     pub fn from_element(hash: H, value: &V) -> Self {
@@ -77,7 +77,7 @@ impl<V: Copy, H: Hasher> Map<V, H> {
     }
 }
 
-impl<V, H: HasherInverse> Map<V, H> {
+impl<V, H: HashInverse> Map<V, H> {
     /// Directly create a new iterator over entries:
     /// `Iterator<Item=(K,&V)>`.
     pub fn iter(&self) -> MapIter<H, V> {
@@ -106,7 +106,7 @@ pub struct MapIter<'a, H: 'a, V: 'a> {
     pos: usize,
 }
 
-impl<'a, H: HasherInverse, V: 'a> Iterator for MapIter<'a, H, V> {
+impl<'a, H: HashInverse, V: 'a> Iterator for MapIter<'a, H, V> {
     type Item = (H::K, &'a V);
 
     fn next(&mut self) -> Option<Self::Item> {
@@ -125,7 +125,7 @@ pub struct MapIterMut<'a, H: 'a, V: 'a> {
     pos: usize,
 }
 
-impl<'a, H: HasherInverse, V: 'a> Iterator for MapIterMut<'a, H, V> {
+impl<'a, H: HashInverse, V: 'a> Iterator for MapIterMut<'a, H, V> {
     type Item = (H::K, &'a mut V);
 
     fn next(&mut self) -> Option<Self::Item> {
@@ -137,9 +137,9 @@ impl<'a, H: HasherInverse, V: 'a> Iterator for MapIterMut<'a, H, V> {
     }
 }
 
-impl<V, H: Hasher> Map<V, H> {
+impl<V, H: PerfectHash> Map<V, H> {
     /// Create a new `Map` from a given vector of values.
-    /// The vector must be compatible to the Hasher.
+    /// The vector must be compatible to the PerfectHash.
     /// Also see `new` and `from_element`.
     pub fn from_initial(hash: H, init: Vec<V>) -> Self {
         let size = hash.size();
@@ -203,7 +203,7 @@ impl<V, H> fmt::Debug for Map<V, H>
     }
 }
 
-impl<V, H: Hasher> Index<H::K> for Map<V, H> {
+impl<V, H: PerfectHash> Index<H::K> for Map<V, H> {
     type Output = V;
 
     fn index(&self, k: H::K) -> &V {
@@ -211,7 +211,7 @@ impl<V, H: Hasher> Index<H::K> for Map<V, H> {
     }
 }
 
-impl<V, H: Hasher> IndexMut<H::K> for Map<V, H> {
+impl<V, H: PerfectHash> IndexMut<H::K> for Map<V, H> {
     fn index_mut(&mut self, k: H::K) -> &mut V {
         self.get_mut(k)
     }
@@ -224,7 +224,7 @@ pub struct Set<H> {
     backing: bit_vec::BitVec,
 }
 
-impl<H: Hasher> Set<H> {
+impl<H: PerfectHash> Set<H> {
     /// Create a new, empty set.
     pub fn new(hash: H) -> Self {
         let size = hash.size();
@@ -265,7 +265,7 @@ impl<H: Hasher> Set<H> {
     }
 }
 
-impl<H: HasherInverse> Set<H> {
+impl<H: HashInverse> Set<H> {
     /// Create an iterator over the contained keys.
     pub fn iter(&self) -> SetIter<H> {
         SetIter {
@@ -276,7 +276,7 @@ impl<H: HasherInverse> Set<H> {
 }
 
 // TODO: How to impl IntoIterator for Set<H> itself?
-impl<'a, H: HasherInverse> IntoIterator for &'a Set<H> {
+impl<'a, H: HashInverse> IntoIterator for &'a Set<H> {
     type Item = H::K;
     type IntoIter = SetIter<'a, H>;
 
@@ -285,18 +285,18 @@ impl<'a, H: HasherInverse> IntoIterator for &'a Set<H> {
     }
 }
 
-impl<H: Hasher + Default> Default for Set<H> {
+impl<H: PerfectHash + Default> Default for Set<H> {
     fn default() -> Self {
         Self::new(H::default())
     }
 }
 
-pub struct SetIter<'a, H: Hasher + 'a> {
+pub struct SetIter<'a, H: PerfectHash + 'a> {
     next: usize,
     set: &'a Set<H>,
 }
 
-impl<'a, H: HasherInverse> Iterator for SetIter<'a, H> {
+impl<'a, H: HashInverse> Iterator for SetIter<'a, H> {
     type Item = H::K;
 
     fn next(&mut self) -> Option<Self::Item> {

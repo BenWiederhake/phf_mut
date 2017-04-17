@@ -14,7 +14,7 @@
 // You should have received a copy of the GNU General Public License
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-use {Hasher, HasherInverse, Map, Set};
+use {PerfectHash, HashInverse, Map, Set};
 
 /* === Example use case === */
 
@@ -40,7 +40,7 @@ impl Pairs {
     }
 }
 
-impl Hasher for Pairs {
+impl PerfectHash for Pairs {
     type K = (usize, usize);
 
     fn hash(&self, k: Self::K) -> usize {
@@ -53,7 +53,7 @@ impl Hasher for Pairs {
     }
 }
 
-impl HasherInverse for Pairs {
+impl HashInverse for Pairs {
     fn invert(&self, index: usize) -> Self::K {
         assert!(index < self.size());
         /* Count down from n-1 to 0. */
