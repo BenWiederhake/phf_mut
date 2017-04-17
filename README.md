@@ -111,12 +111,16 @@ fn main() {
 
 ## TODOs
 
+* Rename `Hasher` to `PerfectHash`
 * Make it feature-complete?
     * `Default`, `Index`, `Clone`, `PartialEq`, `Eq`
     * nicer `Debug` for `HasherInverse`-instances
     * consuming `IntoIterator`s
     * `::collect` target? (`FromIterator<(K,V)>`)
     * Likewise, `Extend<K,V>`
+    * `Map::swap(k: H::K, v: &mut V);` in order to "return" the old value
+    * all `impl IntoIterator for Map`
+    * Provide a general `impl Iterator<Item=H::K>` for all `HasherInverse`?
 * Ask people for feedback on making it "Idiomatic Rust"
 * Try to compile as `nostdlib`, after all I don't use anything anyway, I guess.
 

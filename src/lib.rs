@@ -14,6 +14,8 @@
 // You should have received a copy of the GNU General Public License
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
+//! Perfectly hashed mutable containers.
+
 extern crate bit_vec;
 
 use std::fmt;
@@ -22,22 +24,30 @@ use std::ops::{Index, IndexMut};
 #[cfg(test)]
 mod tests;
 
+/// The perfect hash function to be used in all further constructions.
 pub trait Hasher {
     type K;
     fn hash(&self, k: Self::K) -> usize;
     fn size(&self) -> usize;
 }
 
+/// Inverse operation of the perfect hash function.
+/// This is necessary for all operations that *generate* key values,
+/// for example iteration.
 pub trait HasherInverse: Hasher {
     fn invert(&self, hash: usize) -> Self::K;
 }
 
+/// A mutable, perfectly-hashed map.  Note that a `Map` is always full,
+/// so you might prefer `std::collections::HashMap` for sparse maps.
 pub struct Map<V, H> {
     hash: H,
     backing: Box<[V]>,
 }
 
 impl<V: Default, H: Hasher> Map<V, H> {
+    /// Create a new `Map` full default values.
+    /// Also see `from_initial` and `from_element`.
     pub fn new(hash: H) -> Self {
         let size = hash.size();
         let mut vec: Vec<V> = Vec::with_capacity(size);
@@ -51,7 +61,25 @@ impl<V: Default, H: Hasher> Map<V, H> {
     }
 }
 
+impl<V: Copy, H: Hasher> Map<V, H> {
+    /// Create a new `Map` full of copies of some value.
+    /// Also see `from_initial` and `new`.
+    pub fn from_element(hash: H, value: &V) -> Self {
+        let size = hash.size();
+        let mut vec: Vec<V> = Vec::with_capacity(size);
+        for _ in 0..size {
+            vec.push(*value);
+        }
+        Map {
+            hash: hash,
+            backing: vec.into_boxed_slice(),
+        }
+    }
+}
+
 impl<V, H: HasherInverse> Map<V, H> {
+    /// Directly create a new iterator over entries:
+    /// `Iterator<Item=(K,&V)>`.
     pub fn iter(&self) -> MapIter<H, V> {
         MapIter {
             backing: self.backing.iter(),
@@ -60,6 +88,8 @@ impl<V, H: HasherInverse> Map<V, H> {
         }
     }
 
+    /// Directly create a new iterator over mutable entries:
+    /// `Iterator<Item=(K,&mut V)>`.
     pub fn iter_mut(&mut self) -> MapIterMut<H, V> {
         MapIterMut {
             backing: self.backing.iter_mut(),
@@ -108,6 +138,9 @@ impl<'a, H: HasherInverse, V: 'a> Iterator for MapIterMut<'a, H, V> {
 }
 
 impl<V, H: Hasher> Map<V, H> {
+    /// Create a new `Map` from a given vector of values.
+    /// The vector must be compatible to the Hasher.
+    /// Also see `new` and `from_element`.
     pub fn from_initial(hash: H, init: Vec<V>) -> Self {
         let size = hash.size();
         assert_eq!(size, init.len());
@@ -117,32 +150,46 @@ impl<V, H: Hasher> Map<V, H> {
         }
     }
 
+    /// Overwrite the currently stored value for key `k` by `v`.
+    /// The name `insert` is s homage to `HashMap::insert`,
+    /// and maybe a misnomer.
     pub fn insert(&mut self, k: H::K, v: V) {
         self.backing[self.hash.hash(k)] = v;
     }
 
+    /// Directly get a reference the value for key `k`.
+    /// Also see the `Index` implementation.
     pub fn get(&self, k: H::K) -> &V {
         &self.backing[self.hash.hash(k)]
     }
 
+    /// Directly get a mutable reference the value for key `k`.
+    /// Also see the `Index` implementation.
     pub fn get_mut(&mut self, k: H::K) -> &mut V {
         &mut self.backing[self.hash.hash(k)]
     }
 }
 
 impl<V, H> Map<V, H> {
+    /// Returns true if the map contains no elements.
     pub fn is_empty(&self) -> bool {
         self.backing.is_empty()
     }
 
+    /// Returns the amount of entries,
+    /// which is always equal to the hasher's domain (i.e., `hasher.size()`).
     pub fn len(&self) -> usize {
         self.backing.len()
     }
 
+    /// Directly create a new iterator over the values:
+    /// `Iterator<Item=&V>`.
     pub fn values(&self) -> std::slice::Iter<V> {
         self.backing.iter()
     }
 
+    /// Directly create a new iterator over the mutable values:
+    /// `Iterator<Item=&mut V>`.
     pub fn values_mut(&mut self) -> std::slice::IterMut<V> {
         self.backing.iter_mut()
     }
@@ -170,12 +217,15 @@ impl<V, H: Hasher> IndexMut<H::K> for Map<V, H> {
     }
 }
 
+/// A mutable, perfectly-hashed set.  Note that a small domain is recommended.
+/// For sparse sets, you might prefer `std::collections::HashSet`.
 pub struct Set<H> {
     hash: H,
     backing: bit_vec::BitVec,
 }
 
 impl<H: Hasher> Set<H> {
+    /// Create a new, empty set.
     pub fn new(hash: H) -> Self {
         let size = hash.size();
         Set {
@@ -184,6 +234,9 @@ impl<H: Hasher> Set<H> {
         }
     }
 
+    /// Insert a key into the set, so that `contains`
+    /// for an equal key returns `true` in the future.
+    /// Returns whether this key already was in the set.
     pub fn insert(&mut self, k: H::K) -> bool {
         let idx = self.hash.hash(k);
         let ret = self.backing.get(idx).unwrap();
@@ -191,6 +244,9 @@ impl<H: Hasher> Set<H> {
         ret
     }
 
+    /// Erases a key from the set, so that `contains`
+    /// for an equal key returns `false` in the future.
+    /// Returns whether this key already was in the set.
     pub fn erase(&mut self, k: H::K) -> bool {
         let idx = self.hash.hash(k);
         let ret = self.backing.get(idx).unwrap();
@@ -202,11 +258,15 @@ impl<H: Hasher> Set<H> {
         self.backing.get(index).unwrap()
     }
 
+    /// Returns whether the key is in the set.
     pub fn contains(&self, k: H::K) -> bool {
         let idx = self.hash.hash(k);
         self.has(idx)
     }
+}
 
+impl<H: HasherInverse> Set<H> {
+    /// Create an iterator over the contained keys.
     pub fn iter(&self) -> SetIter<H> {
         SetIter {
             next: self.backing.len(),
