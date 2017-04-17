@@ -69,7 +69,8 @@ impl HasherInverse for Pairs {
                 return (use_a, use_b);
             }
         }
-        panic!("Unsigned integer {} appears to be strictly smaller than zero 0.", index);
+        panic!("Unsigned integer {} appears to be strictly smaller than zero 0.",
+               index);
     }
 }
 

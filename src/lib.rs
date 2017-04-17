@@ -28,7 +28,7 @@ pub trait Hasher {
     fn size(&self) -> usize;
 }
 
-pub trait HasherInverse : Hasher {
+pub trait HasherInverse: Hasher {
     fn invert(&self, hash: usize) -> Self::K;
 }
 
