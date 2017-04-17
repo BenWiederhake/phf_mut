@@ -118,7 +118,6 @@ fn main() {
     * `::collect` target? (`FromIterator<(K,V)>`)
     * Likewise, `Extend<K,V>`
     * all `impl IntoIterator for Map`
-    * Provide a general `impl Iterator<Item=H::K>` for all `HashInverse`?
 * Ask people for feedback on making it "Idiomatic Rust"
 * Try to compile as `nostdlib`, after all I don't use anything anyway, I guess.
 

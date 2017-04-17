@@ -36,6 +36,33 @@ pub trait PerfectHash {
 /// for example iteration.
 pub trait HashInverse: PerfectHash {
     fn invert(&self, hash: usize) -> Self::K;
+
+    /// Create a new iterator over the hash domain.
+    fn iter(&self) -> KeyIter<Self> {
+        KeyIter { next: 0, hash: self }
+    }
+}
+
+/// Iterator over the domain of a `PerfectHash`.
+pub struct KeyIter<'a, H: ?Sized + 'a> {
+    hash: &'a H,
+    next: usize,
+}
+
+impl<'a, H: HashInverse> Iterator for KeyIter<'a, H> {
+    type Item = H::K;
+
+    fn next(&mut self) -> Option<Self::Item> {
+        let size = self.hash.size();
+        if self.next == size {
+            self.next = 0;
+            None
+        } else {
+            let idx = self.next;
+            self.next += 1;
+            Some(self.hash.invert(idx))
+        }
+    }
 }
 
 /// A mutable, perfectly-hashed map.  Note that a `Map` is always full,
