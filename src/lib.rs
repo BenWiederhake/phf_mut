@@ -52,7 +52,7 @@ impl<V: Default, H: Hasher> Map<V, H> {
 }
 
 impl<V, H: HasherInverse> Map<V, H> {
-    pub fn iter<'a>(&'a self) -> MapIter<'a, H, V> {
+    pub fn iter(&self) -> MapIter<H, V> {
         MapIter {
             backing: self.backing.iter(),
             hash: &self.hash,
@@ -60,7 +60,7 @@ impl<V, H: HasherInverse> Map<V, H> {
         }
     }
 
-    pub fn iter_mut<'a>(&'a mut self) -> MapIterMut<'a, H, V> {
+    pub fn iter_mut(&mut self) -> MapIterMut<H, V> {
         MapIterMut {
             backing: self.backing.iter_mut(),
             hash: &self.hash,
@@ -139,11 +139,11 @@ impl<V, H> Map<V, H> {
         self.backing.len()
     }
 
-    pub fn values<'a>(&'a self) -> std::slice::Iter<'a, V> {
+    pub fn values(&self) -> std::slice::Iter<V> {
         self.backing.iter()
     }
 
-    pub fn values_mut<'a>(&'a mut self) -> std::slice::IterMut<'a, V> {
+    pub fn values_mut(&mut self) -> std::slice::IterMut<V> {
         self.backing.iter_mut()
     }
 }
@@ -207,7 +207,7 @@ impl<H: Hasher> Set<H> {
         self.has(idx)
     }
 
-    pub fn iter<'a>(&'a self) -> SetIter<'a, H> {
+    pub fn iter(&self) -> SetIter<H> {
         SetIter {
             next: self.backing.len(),
             set: self,
