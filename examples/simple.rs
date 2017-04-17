@@ -17,41 +17,50 @@
 extern crate phf_mut;
 use phf_mut::{Hasher, Map};
 
-struct Cuboid {
-    w: usize,
-    h: usize,
-    d: usize,
+struct Pairs {
+    n: usize,
 }
 
-impl Cuboid {
-    pub fn new(w: usize, h: usize, d: usize) -> Self {
-        assert!(w > 0);
-        assert!(h > 0);
-        assert!(d > 0);
-        Cuboid { w: w, h: h, d: d }
+impl Pairs {
+    pub fn new(n: usize) -> Self {
+        Pairs { n: n }
+    }
+
+    fn sort((u, v): (usize, usize)) -> (usize, usize) {
+        if u > v {
+            (v, u)
+        } else {
+            (u, v)
+        }
+    }
+
+    fn size_when(n: usize) -> usize {
+        (n + 1) * n / 2
     }
 }
 
-impl Hasher for Cuboid {
-    type K = (usize, usize, usize);
+impl Hasher for Pairs {
+    type K = (usize, usize);
 
-    fn hash(&self, (x, y, z): Self::K) -> usize {
-        x + self.w * y + self.w * self.h * z
+    fn hash(&self, k: Self::K) -> usize {
+        let (a, b) = Self::sort(k);
+        a + Self::size_when(b)
     }
 
     fn size(&self) -> usize {
-        self.hash((self.w - 1, self.h - 1, self.d - 1)) + 1
+        Self::size_when(self.n)
     }
 }
 
 fn main() {
-    let mut mymap = Map::new(Cuboid::new(10, 20, 30));
-    mymap.insert((0, 3, 7), "Hello ");
-    mymap.insert((4, 19, 13), "lovely");
-    mymap.insert((9, 8, 29), "World!");
-    print!("{}", mymap.get((0, 3, 7))); // "Hello "
-    print!("{}", mymap.get((2, 15, 2))); // ""
-    print!("{}", mymap.get((9, 8, 29))); // "World!"
-    print!("{}", mymap.get((7, 4, 23))); // ""
+    let mut mymap = Map::new(Pairs::new(10));
+    mymap.insert((3, 7), String::from("Hello"));
+    mymap[(7, 3)].push(' ');
+    mymap.insert((4, 3), String::from("lovely"));
+    mymap.insert((2, 9), String::from("World!"));
+    print!("{}", mymap.get((3, 7))); // "Hello "
+    print!("{}", mymap.get((2, 2))); // ""
+    print!("{}", mymap.get((2, 9))); // "World!"
+    print!("{}", mymap.get((7, 4))); // ""
     println!();
 }
