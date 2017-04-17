@@ -117,7 +117,6 @@ fn main() {
     * consuming `IntoIterator`s
     * `::collect` target? (`FromIterator<(K,V)>`)
     * Likewise, `Extend<K,V>`
-    * `Map::swap(k: H::K, v: &mut V);` in order to "return" the old value
     * all `impl IntoIterator for Map`
     * Provide a general `impl Iterator<Item=H::K>` for all `HashInverse`?
 * Ask people for feedback on making it "Idiomatic Rust"

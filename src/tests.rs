@@ -93,6 +93,25 @@ fn test_map_basics() {
 }
 
 #[test]
+fn test_map_swap() {
+    let mut mymap = Map::new(Pairs::new(10));
+
+    mymap.insert((3, 7), String::from("Hello"));
+    mymap.insert((4, 3), String::from("lovely"));
+    let mut world = String::from("World!");
+    assert_eq!("Hello", mymap[(3, 7)]);
+    assert_eq!("", mymap[(8, 9)]);
+    assert_eq!("lovely", mymap[(3, 4)]);
+    assert_eq!("World!", world);
+
+    mymap.swap((4, 3), &mut world);
+    assert_eq!("Hello", mymap[(3, 7)]);
+    assert_eq!("", mymap[(8, 9)]);
+    assert_eq!("World!", mymap[(3, 4)]);
+    assert_eq!("lovely", world);
+}
+
+#[test]
 fn test_map_iter() {
     let mut mymap = Map::new(Pairs::new(3));
     mymap.insert((0, 1), 42);

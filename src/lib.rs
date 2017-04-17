@@ -157,6 +157,12 @@ impl<V, H: PerfectHash> Map<V, H> {
         self.backing[self.hash.hash(k)] = v;
     }
 
+    /// Swaps the currently stored value for key `k` with `v`,
+    /// so the old value is now stored in `v`.
+    pub fn swap(&mut self, k: H::K, v: &mut V) {
+        std::mem::swap(&mut self.backing[self.hash.hash(k)], v);
+    }
+
     /// Directly get a reference the value for key `k`.
     /// Also see the `Index` implementation.
     pub fn get(&self, k: H::K) -> &V {
