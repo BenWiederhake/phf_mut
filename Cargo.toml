@@ -1,9 +1,10 @@
 [package]
 name = "phf_mut"
-version = "0.3.0"
+version = "0.3.1"
 authors = ["Ben Wiederhake <BenWiederhake.GitHub@gmx.de>"]
 description = "Perfectly hashed mutable containers"
 repository = "https://github.com/BenWiederhake/phf_mut"
+documentation = "https://docs.rs/phf_mut/0.3.1/phf_mut"
 readme = "README.md"
 license = "GPL-3.0"
 #license-file = "LICENSE"

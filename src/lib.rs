@@ -196,8 +196,7 @@ impl<V, H: PerfectHash> Map<V, H> {
     }
 
     /// Overwrite the currently stored value for key `k` by `v`.
-    /// The name `insert` is s homage to `HashMap::insert`,
-    /// and maybe a misnomer.
+    /// The name `insert` is s homage to `HashMap::insert`.
     pub fn insert(&mut self, k: H::K, v: V) {
         self.backing[self.hash.hash(k)] = v;
     }
