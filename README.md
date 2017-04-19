@@ -114,12 +114,9 @@ fn main() {
 * Make it feature-complete?
     * `Default`, `Index`, `Clone`, `PartialEq`, `Eq`
     * nicer `Debug` for `HashInverse`-instances
-    * consuming `IntoIterator`s
     * `::collect` target? (`FromIterator<(K,V)>`)
     * Likewise, `Extend<K,V>`
-    * all `impl IntoIterator for Map`
 * Ask people for feedback on making it "Idiomatic Rust"
-* Try to compile as `nostdlib`, after all I don't use anything anyway, I guess.
 
 ## Contribute
 

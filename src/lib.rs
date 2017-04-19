@@ -126,6 +126,24 @@ impl<V, H: HashInverse> Map<V, H> {
     }
 }
 
+impl<'a, V, H: HashInverse> IntoIterator for &'a Map<V, H> {
+    type Item = (H::K, &'a V);
+    type IntoIter = MapIter<'a, H, V>;
+
+    fn into_iter(self) -> Self::IntoIter {
+        self.iter()
+    }
+}
+
+impl<'a, V, H: HashInverse> IntoIterator for &'a mut Map<V, H> {
+    type Item = (H::K, &'a mut V);
+    type IntoIter = MapIterMut<'a, H, V>;
+
+    fn into_iter(self) -> Self::IntoIter {
+        self.iter_mut()
+    }
+}
+
 pub struct MapIter<'a, H: 'a, V: 'a> {
     // TODO: Sub-optimal approach.  Now the position is saved twice.
     backing: std::slice::Iter<'a, V>,
@@ -308,7 +326,6 @@ impl<H: HashInverse> Set<H> {
     }
 }
 
-// TODO: How to impl IntoIterator for Set<H> itself?
 impl<'a, H: HashInverse> IntoIterator for &'a Set<H> {
     type Item = H::K;
     type IntoIter = SetIter<'a, H>;
