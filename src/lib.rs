@@ -320,6 +320,14 @@ impl<H: PerfectHash> Set<H> {
         let idx = self.hash.hash(k);
         self.has(idx)
     }
+
+    pub fn is_empty(&self) -> bool {
+        !self.backing.any()
+    }
+
+    pub fn is_full(&self) -> bool {
+        self.backing.all()
+    }
 }
 
 impl<H: HashInverse> Set<H> {

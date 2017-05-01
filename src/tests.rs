@@ -164,8 +164,13 @@ fn test_map_clone() {
 #[test]
 fn test_set_basics() {
     let mut myset = Set::new(Pairs::new(10));
+    assert_eq!(true, myset.is_empty());
+    assert_eq!(false, myset.is_full());
+
     myset.insert((7, 6));
     myset.insert((4, 3));
+    assert_eq!(false, myset.is_empty());
+    assert_eq!(false, myset.is_full());
     assert_eq!(true, myset.contains((7, 6)));
     assert_eq!(true, myset.contains((6, 7)));
     assert_eq!(false, myset.contains((7, 8)));
@@ -186,6 +191,8 @@ fn test_set_basics() {
     assert_eq!(false, myset.contains((5, 5)));
 
     myset.erase((4, 3));
+    assert_eq!(false, myset.is_empty());
+    assert_eq!(false, myset.is_full());
     assert_eq!(true, myset.contains((7, 6)));
     assert_eq!(true, myset.contains((6, 7)));
     assert_eq!(false, myset.contains((7, 8)));
@@ -194,6 +201,80 @@ fn test_set_basics() {
     assert_eq!(true, myset.contains((1, 0)));
     assert_eq!(true, myset.contains((0, 1)));
     assert_eq!(false, myset.contains((5, 5)));
+}
+
+#[test]
+fn test_set_fill() {
+    let mut myset = Set::new(Pairs::new(4));
+    assert_eq!(true, myset.is_empty());
+    assert_eq!(false, myset.is_full());
+
+    myset.insert((2, 3));
+    myset.insert((1, 3));
+    assert_eq!(false, myset.is_empty());
+    assert_eq!(false, myset.is_full());
+    assert_eq!(false, myset.contains((0, 0)));
+    assert_eq!(false, myset.contains((0, 1)));
+    assert_eq!(false, myset.contains((0, 2)));
+    assert_eq!(false, myset.contains((0, 3)));
+    assert_eq!(false, myset.contains((1, 0)));
+    assert_eq!(false, myset.contains((1, 1)));
+    assert_eq!(false, myset.contains((1, 2)));
+    assert_eq!(true, myset.contains((1, 3)));
+    assert_eq!(false, myset.contains((2, 0)));
+    assert_eq!(false, myset.contains((2, 1)));
+    assert_eq!(false, myset.contains((2, 2)));
+    assert_eq!(true, myset.contains((2, 3)));
+    assert_eq!(false, myset.contains((3, 0)));
+    assert_eq!(true, myset.contains((3, 1)));
+    assert_eq!(true, myset.contains((3, 2)));
+    assert_eq!(false, myset.contains((3, 3)));
+
+    myset.insert((0, 1));
+    myset.insert((0, 2));
+    myset.insert((0, 0));
+    assert_eq!(false, myset.is_empty());
+    assert_eq!(false, myset.is_full());
+    assert_eq!(true, myset.contains((0, 0)));
+    assert_eq!(true, myset.contains((0, 1)));
+    assert_eq!(true, myset.contains((0, 2)));
+    assert_eq!(false, myset.contains((0, 3)));
+    assert_eq!(true, myset.contains((1, 0)));
+    assert_eq!(false, myset.contains((1, 1)));
+    assert_eq!(false, myset.contains((1, 2)));
+    assert_eq!(true, myset.contains((1, 3)));
+    assert_eq!(true, myset.contains((2, 0)));
+    assert_eq!(false, myset.contains((2, 1)));
+    assert_eq!(false, myset.contains((2, 2)));
+    assert_eq!(true, myset.contains((2, 3)));
+    assert_eq!(false, myset.contains((3, 0)));
+    assert_eq!(true, myset.contains((3, 1)));
+    assert_eq!(true, myset.contains((3, 2)));
+    assert_eq!(false, myset.contains((3, 3)));
+
+    myset.insert((0, 3));
+    myset.insert((1, 1));
+    myset.insert((2, 2));
+    myset.insert((3, 3));
+    myset.insert((2, 1));
+    assert_eq!(false, myset.is_empty());
+    assert_eq!(true, myset.is_full());
+    assert_eq!(true, myset.contains((0, 0)));
+    assert_eq!(true, myset.contains((0, 1)));
+    assert_eq!(true, myset.contains((0, 2)));
+    assert_eq!(true, myset.contains((0, 3)));
+    assert_eq!(true, myset.contains((1, 0)));
+    assert_eq!(true, myset.contains((1, 1)));
+    assert_eq!(true, myset.contains((1, 2)));
+    assert_eq!(true, myset.contains((1, 3)));
+    assert_eq!(true, myset.contains((2, 0)));
+    assert_eq!(true, myset.contains((2, 1)));
+    assert_eq!(true, myset.contains((2, 2)));
+    assert_eq!(true, myset.contains((2, 3)));
+    assert_eq!(true, myset.contains((3, 0)));
+    assert_eq!(true, myset.contains((3, 1)));
+    assert_eq!(true, myset.contains((3, 2)));
+    assert_eq!(true, myset.contains((3, 3)));
 }
 
 #[test]
