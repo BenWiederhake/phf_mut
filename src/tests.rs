@@ -14,10 +14,12 @@
 // You should have received a copy of the GNU General Public License
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
+use std::clone::Clone;
 use {PerfectHash, HashInverse, Map, Set};
 
 /* === Example use case === */
 
+#[derive(Clone)]
 struct Pairs {
     n: usize,
 }
@@ -140,6 +142,23 @@ fn test_map_iter() {
                     (1, 2, 123), (2, 2, 0),], entry_vec);
 }
 
+#[test]
+fn test_map_clone() {
+    let mut mymap = Map::new(Pairs::new(10));
+    mymap.insert((3, 7), String::from("Hello"));
+    mymap[(7, 3)].push(' ');
+    mymap.insert((4, 3), String::from("lovely"));
+    mymap.insert((2, 9), String::from("World!"));
+    let othermap = mymap.clone();
+    assert_eq!("Hello ", othermap.get((3, 7)));
+    assert_eq!("Hello ", othermap.get((7, 3)));
+    assert_eq!("", othermap.get((2, 2)));
+    assert_eq!("World!", othermap[(2, 9)]);
+    assert_eq!("World!", othermap[(9, 2)]);
+    assert_eq!("", othermap.get((7, 4)));
+    assert_eq!("", othermap.get((6, 6)));
+}
+
 /* === Actual tests: Set === */
 
 #[test]
@@ -187,4 +206,22 @@ fn test_set_iter() {
     let myset: Set<_> = myset;
     let as_vec = myset.iter().collect::<Vec<_>>();
     assert_eq!(vec![(0, 1), (1, 4), (3, 4), (6, 7)], as_vec);
+}
+
+#[test]
+fn test_set_clone() {
+    let mut myset = Set::new(Pairs::new(10));
+    myset.insert((7, 6));
+    myset.insert((4, 3));
+    myset.insert((1, 0));
+    let otherset = myset.clone();
+
+    assert_eq!(true, otherset.contains((7, 6)));
+    assert_eq!(true, otherset.contains((6, 7)));
+    assert_eq!(false, otherset.contains((7, 8)));
+    assert_eq!(true, otherset.contains((4, 3)));
+    assert_eq!(false, otherset.contains((9, 8)));
+    assert_eq!(true, otherset.contains((1, 0)));
+    assert_eq!(true, otherset.contains((0, 1)));
+    assert_eq!(false, otherset.contains((5, 5)));
 }

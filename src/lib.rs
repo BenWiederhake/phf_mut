@@ -253,6 +253,13 @@ impl<V, H> fmt::Debug for Map<V, H>
     }
 }
 
+impl<V: Clone, H: Clone> Clone for Map<V, H> {
+    fn clone(&self) -> Self { Self {
+        hash: self.hash.clone(),
+        backing: self.backing.clone(),
+    }}
+}
+
 impl<V, H: PerfectHash> Index<H::K> for Map<V, H> {
     type Output = V;
 
@@ -338,6 +345,13 @@ impl<H: PerfectHash + Default> Default for Set<H> {
     fn default() -> Self {
         Self::new(H::default())
     }
+}
+
+impl<H: Clone> Clone for Set<H> {
+    fn clone(&self) -> Self { Self {
+        hash: self.hash.clone(),
+        backing: self.backing.clone(),
+    }}
 }
 
 pub struct SetIter<'a, H: PerfectHash + 'a> {
