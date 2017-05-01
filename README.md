@@ -44,15 +44,14 @@ Add at an appropriate position to your `Cargo.toml`:
 
 ```TOML
 [dependencies]
-phf_mut = { git = "https://github.com/BenWiederhake/phf_mut.git" }
+phf_mut = { git = "https://github.com/BenWiederhake/phf_mut.git", version = "0.3.2" }
 ```
 
-That should be it.  You'll be glad to hear that `phf_mut` itself
-does not have any dependencies.
+That should be it.
 
 ## Usage
 
-Just use it!  No dependencies, and it's short enough.
+Just use it!
 The complexity lies in coming up with a nice API,
 not in writing the code.
 
@@ -112,7 +111,8 @@ fn main() {
 ## TODOs
 
 * Make it feature-complete?
-    * `Default`, `Index`, `Clone`, `PartialEq`, `Eq`
+    * `Default`, `PartialEq`, `Eq`
+    * `Index` for `Set`
     * nicer `Debug` for `HashInverse`-instances
     * `::collect` target? (`FromIterator<(K,V)>`)
     * Likewise, `Extend<K,V>`

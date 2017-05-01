@@ -1,6 +1,6 @@
 [package]
 name = "phf_mut"
-version = "0.3.1"
+version = "0.3.2"
 authors = ["Ben Wiederhake <BenWiederhake.GitHub@gmx.de>"]
 description = "Perfectly hashed mutable containers"
 repository = "https://github.com/BenWiederhake/phf_mut"
