@@ -1,14 +1,14 @@
 # phf_mut
 
-> Perfectly hashed mutable containers.
+This is a Rust crate for perfectly-hashed *mutable* containers, in contrast
+to the already existing perfectly-hashed *immutable* data structures,
+e.g. [other crates](https://crates.io/crates/phf).
 
 Assume you want a map from keys to values, your key domain is small-ish,
 and you already have a perfect hash function.
 
 The `phf` package supports immutable, compile-time generated maps.
-But what about mutable maps and sets?
-
-It seems there isn't such a crate yet, so I wrote my own.
+But what about mutable maps and sets? That's what this crate is for.
 
 In the case of maps, assume some kind of default element.
 Note that we will assume that the map will be rather full.
