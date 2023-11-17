@@ -159,6 +159,19 @@ fn test_map_clone() {
     assert_eq!("", othermap.get((6, 6)));
 }
 
+/* === Actual tests: Map, clone-only value type === */
+
+#[derive(Clone)]
+struct Foo(u32);
+
+#[test]
+fn test_map_clone_init() {
+    let mut mymap = Map::from_element(Pairs::new(10), &Foo(1337));
+    mymap.insert((3, 7), Foo(42));
+    assert_eq!(42, mymap.get((7, 3)).0);
+    assert_eq!(1337, mymap.get((5, 5)).0);
+}
+
 /* === Actual tests: Set === */
 
 #[test]

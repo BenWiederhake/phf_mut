@@ -88,14 +88,14 @@ impl<V: Default, H: PerfectHash> Map<V, H> {
     }
 }
 
-impl<V: Copy, H: PerfectHash> Map<V, H> {
+impl<V: Clone, H: PerfectHash> Map<V, H> {
     /// Create a new `Map` full of copies of some value.
     /// Also see `from_initial` and `new`.
     pub fn from_element(hash: H, value: &V) -> Self {
         let size = hash.size();
         let mut vec: Vec<V> = Vec::with_capacity(size);
         for _ in 0..size {
-            vec.push(*value);
+            vec.push(value.clone());
         }
         Map {
             hash: hash,
