@@ -44,7 +44,7 @@ Add at an appropriate position to your `Cargo.toml`:
 
 ```TOML
 [dependencies]
-phf_mut = { git = "https://github.com/BenWiederhake/phf_mut.git", version = "0.3.2" }
+phf_mut = { git = "https://github.com/BenWiederhake/phf_mut.git", version = "0.4.1" }
 ```
 
 That should be it.
